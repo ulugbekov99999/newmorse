@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кликер с ежедневными подарками</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #ff9a9e, #fad0c4);
+        }
+        #totalScore {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #ffffff;
+        }
+        #clickButton {
+            font-size: 24px;
+            width: 150px;
+            height: 150px;
+            margin: 20px 0;
+            border: none;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        #clickButton:hover {
+            background-color: #45a049;
+        }
+        #game {
+            margin: 20px;
+        }
+        button {
+            font-size: 20px;
+            padding: 15px 30px;
+            margin: 10px;
+            border: none;
+            border-radius: 10px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .hidden {
+            display: none;
+        }
+        .morse {
+            font-size: 18px;
+            color: #333;
+            margin-top: 20px;
+        }
+        .subscription {
+            margin: 20px 0;
+        }
+        .subscription a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .subscription a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="totalScore">Общий счет: <span id="score">0</span></div>
+    <button id="clickButton">Клик!</button>
+    <div id="game">
+        <p id="giftMessage" class="hidden">Вы получили ежедневный подарок: +100 очков!</p>
+        <button id="dailyGiftButton">Получить ежедневный подарок</button>
+        <h3>Улучшения:</h3>
+        <button id="upgradeButton">Купить улучшение (+1 очко за клик) за 50 очков</button>
+    </div>
+
+    <div class="subscription">
+        <h3>Задание: Подпишитесь на наш Telegram канал</h3>
+        <p><a href="https://t.me/your_channel" target="_blank">Перейти в Telegram</a></p>
+        <button id="subscriptionButton">Проверить подписку</button>
+    </div>
+
+    <div class="morse">
+        <h3>Ежедневный алфавит Морзе</h3>
+        <p id="morseCode">A: .-</p>
+        <h4>Попробуйте ввести символ Морзе</h4>
+        <input type="text" id="morseInput" placeholder="Введите символ Морзе" />
+        <button id="morseCheckButton">Проверить</button>
+        <p id="morseResult"></p>
+    </div>
+
+    <div>
+        <button id="tonkeeperButton">Подключиться к Tonkeeper</button>
+        <p id="walletAddress" class="hidden">Адрес кошелька: <span id="address"></span></p>
+    </div>
+
+    <script>
+        let score = parseInt(localStorage.getItem('score')) || 0;
+        let pointsPerClick = parseInt(localStorage.getItem('pointsPerClick')) || 1;
+
+        const clickButton = document.getElementById('clickButton');
+        const scoreDisplay = document.getElementById('score');
+        const dailyGiftButton = document.getElementById('dailyGiftButton');
+        const giftMessage = document.getElementById('giftMessage');
+        const upgradeButton = document.getElementById('upgradeButton');
+        const subscriptionButton = document.getElementById('subscriptionButton');
+        const morseCodeDisplay = document.getElementById('morseCode');
+        const morseInput = document.getElementById('morseInput');
+        const morseCheckButton = document.getElementById('morseCheckButton');
+        const morseResult = document.getElementById('morseResult');
+        const tonkeeperButton = document.getElementById('tonkeeperButton');
+        const walletAddressDisplay = document.getElementById('walletAddress');
+        const addressSpan = document.getElementById('address');
+
+        // Обновить отображение очков
+        function updateScore() {
+            scoreDisplay.textContent = score;
+            localStorage.setItem('score', score);
+            localStorage.setItem('pointsPerClick', pointsPerClick);
+        }
+
+        // Обработка клика
+        clickButton.addEventListener('click', () => {
+            score += pointsPerClick;
+            updateScore();
+        });
+
+        // Ежедневный подарок
+        dailyGiftButton.addEventListener('click', () => {
+            const lastClaimed = localStorage.getItem('lastDailyGift');
+            const now = new Date().toDateString();
+
+            if (lastClaimed === now) {
+                alert('Вы уже получили ежедневный подарок сегодня!');
+            } else {
+                score += 100;
+                updateScore();
+                localStorage.setItem('lastDailyGift', now);
+                giftMessage.classList.remove('hidden');
+                setTimeout(() => giftMessage.classList.add('hidden'), 3000);
+            }
+        });
+
+        // Покупка улучшения
+        upgradeButton.addEventListener('click', () => {
+            if (score >= 50) {
+                score -= 50;
+                pointsPerClick += 1;
+                updateScore();
+                alert('Улучшение куплено! Теперь вы получаете +1 очко за клик.');
+            } else {
+                alert('Недостаточно очков для покупки улучшения.');
+            }
+        });
+
+        // Проверка подписки
+        subscriptionButton.addEventListener('click', () => {
+            const isSubscribed = confirm('Вы подписались на наш Telegram канал?');
+            if (isSubscribed) {
+                score += 500;
+                updateScore();
+                alert('Спасибо за подписку! Вы получили 500 очков.');
+            } else {
+                alert('Пожалуйста, подпишитесь, чтобы получить награду.');
+            }
+        });
+
+        // Проверка введенного символа Морзе
+        morseCheckButton.addEventListener('click', () => {
+            const userInput = morseInput.value.trim();
+            if (userInput === '.-') {
+                morseResult.textContent = 'Правильно! Вы получили 50 очков!';
+                score += 50;
+                updateScore();
+            } else {
+                morseResult.textContent = 'Неправильно! Попробуйте еще раз.';
+            }
+            morseInput.value = '';
+        });
+
+        // Подключение к Tonkeeper через Deep Link
+        tonkeeperButton.addEventListener('click', () => {
+            const connectUrl = `https://tonkeeper.com/connect?client_id=bebcoin.bot&return_url=${encodeURIComponent(window.location.href)}`;
+
+            // Открытие Tonkeeper для подключения
+            window.open(connectUrl, '_blank');
+
+            // Симуляция получения адреса (заменить при реальной интеграции)
+            setTimeout(() => {
+                const mockAddress = 'EQC...MOCK_ADDRESS'; // Замените на адрес, полученный от Tonkeeper
+                addressSpan.textContent = mockAddress;
+                walletAddressDisplay.classList.remove('hidden');
+
+                // Сохранение текущего счета с адресом кошелька
+                localStorage.setItem(`score_${mockAddress}`, score);
+            }, 2000);
+        });
+
+        // Инициализация отображения очков при загрузке страницы
+        updateScore();
+    </script>
+    <div class="TASk">
+        <a href="http://127.0.0.1:5500/task.html">TASKS</a>
+    </div>
+</body>
+</html>
